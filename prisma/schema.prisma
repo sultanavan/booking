@@ -16,8 +16,8 @@ model User {
   name        String
   phoneNumber String
   pictureUrl  String
-  reviews     Review[]  // Relation to Review
-  bookings    Booking[] // Relation to Booking
+  reviews     Review[]  @relation("UserReviews")
+  bookings    Booking[] @relation("UserBookings")
 }
 
 model Review {
@@ -26,8 +26,9 @@ model Review {
   propertyId String
   rating     Int
   comment    String
-  user       User     @relation(fields: [userId], references: [id])
-  property   Property @relation(fields: [propertyId], references: [id])
+
+  user     User     @relation("UserReviews", fields: [userId], references: [id], onDelete: Cascade)
+  property Property @relation("PropertyReviews", fields: [propertyId], references: [id], onDelete: Cascade)
 }
 
 model Booking {
@@ -39,24 +40,27 @@ model Booking {
   numberOfGuests Int
   totalPrice     Int
   bookingStatus  String
-  user           User     @relation(fields: [userId], references: [id])
-  property       Property @relation(fields: [propertyId], references: [id])
+
+  user     User     @relation("UserBookings", fields: [userId], references: [id], onDelete: Cascade)
+  property Property @relation("PropertyBookings", fields: [propertyId], references: [id], onDelete: Cascade)
 }
 
 model Property {
-  id            String    @id @default(uuid())
+  id            String     @id @default(uuid())
   hostId        String
   title         String
   description   String
   location      String
   pricePerNight Float
-  bedRoomCount  Int
+  bedroomCount  Int
   bathRoomCount Int
   maxGuestCount Int
   rating        Int
-  host          Host      @relation(fields: [hostId], references: [id])
-  reviews       Review[]
-  bookings      Booking[]
+
+  host       Host             @relation("HostProperties", fields: [hostId], references: [id], onDelete: Cascade)
+  reviews    Review[]         @relation("PropertyReviews")
+  bookings   Booking[]        @relation("PropertyBookings")
+  amenities  PropertyAmenity[]
 }
 
 model Host {
@@ -68,5 +72,22 @@ model Host {
   phoneNumber String
   pictureUrl  String
   aboutMe     String
-  listings    Property[]
+
+  listings Property[] @relation("HostProperties")
+}
+
+model Amenity {
+  id        String            @id
+  name      String            @unique
+  properties PropertyAmenity[]
+}
+
+model PropertyAmenity {
+  propertyId String
+  amenityId  String
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  amenity  Amenity  @relation(fields: [amenityId], references: [id], onDelete: Cascade)
+
+  @@id([propertyId, amenityId]) // composite PK
 }

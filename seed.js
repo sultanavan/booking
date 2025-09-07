@@ -1,33 +1,98 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import fs from "fs";
+import path from "path";
 
 const prisma = new PrismaClient();
 
+async function loadJSON(fileName) {
+  const filePath = path.join(process.cwd(), "src", "data", fileName);
+  return JSON.parse(fs.readFileSync(filePath, "utf-8"));
+}
+
 async function main() {
-  console.log("🌱 Seeding single user...");
+  console.log("🌱 Seeding database...");
 
-  const password = await bcrypt.hash("password123", 10);
+  // Load data
+  const { users } = await loadJSON("users.json");
+  const { hosts } = await loadJSON("hosts.json");
+  const { properties } = await loadJSON("properties.json");
+  const { bookings } = await loadJSON("bookings.json");
+  const { reviews } = await loadJSON("reviews.json");
+  const { amenities } = await loadJSON("amenities.json");
 
-  await prisma.user.upsert({
-    where: { username: "jdoe" },
-    update: {},
-    create: {
-      id: "e5678901-23f0-1234-5678-9abcdef01234",
-      username: "jdoe",
-      email: "jdoe@example.com",
-      password,
-      name: "John Doe",
-      phoneNumber: "+1234567890",
-      pictureUrl: "https://i.pravatar.cc/150?u=jdoe",
-    },
-  });
+  // --- Users ---
+  for (const user of users) {
+    const hashedPassword = await bcrypt.hash(user.password, 10);
+    await prisma.user.upsert({
+      where: { id: user.id },
+      update: {},
+      create: { ...user, password: hashedPassword },
+    });
+  }
+  console.log("✅ Users seeded");
 
-  console.log("✅ User jdoe seeded successfully!");
+  // --- Hosts ---
+  for (const host of hosts) {
+    const hashedPassword = await bcrypt.hash(host.password, 10);
+    await prisma.host.upsert({
+      where: { id: host.id },
+      update: {},
+      create: { ...host, password: hashedPassword },
+    });
+  }
+  console.log("✅ Hosts seeded");
+
+  // --- Properties ---
+  for (const property of properties) {
+    await prisma.property.upsert({
+      where: { id: property.id },
+      update: {},
+      create: property,
+    });
+  }
+  console.log("✅ Properties seeded");
+
+  // --- Bookings ---
+  for (const booking of bookings) {
+    await prisma.booking.upsert({
+      where: { id: booking.id },
+      update: {},
+      create: {
+        ...booking,
+        checkinDate: new Date(booking.checkinDate),
+        checkoutDate: new Date(booking.checkoutDate),
+      },
+    });
+  }
+  console.log("✅ Bookings seeded");
+
+  // --- Reviews ---
+  for (const review of reviews) {
+    await prisma.review.upsert({
+      where: { id: review.id },
+      update: {},
+      create: review,
+    });
+  }
+  console.log("✅ Reviews seeded");
+
+  // --- Amenities ---
+  for (const amenity of amenities) {
+    await prisma.amenity.upsert({
+      where: { id: amenity.id },
+      update: {},
+      create: amenity,
+    });
+  }
+  console.log("✅ Amenities seeded");
+
+  console.log("🌱 Seeding completed successfully!");
 }
 
 main()
   .catch((e) => {
-    console.error("❌ Error while seeding:", e);
+    console.error("❌ Seeding error:", e);
     process.exit(1);
   })
   .finally(async () => {

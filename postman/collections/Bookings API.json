@@ -553,7 +553,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"Alex\",\n  \"password\": \"password123\",\n  \"name\": \"John Doe\",\n  \"email\": \"johndoe@example.com\",\n  \"phoneNumber\": \"123-456-7890\",\n  \"pictureUrl\": \"https://global-uploads.webflow.com/5eecfecbe625d195e35b89f2/624bfb093da7d92733c001c0_Ignacio%20Villafruela%20Rodr%C3%ADguez.jpg\"\n}",
+              "raw": "{\n  \"username\": \"Alex\",\n  \"password\": \"password123\",\n  \"name\": \"John Doe\",\n  \"email\": \"johndoe2@example.com\",\n  \"phoneNumber\": \"123-456-7890\",\n  \"pictureUrl\": \"https://global-uploads.webflow.com/5eecfecbe625d195e35b89f2/624bfb093da7d92733c001c0_Ignacio%20Villafruela%20Rodr%C3%ADguez.jpg\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1156,7 +1156,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"newhosty \",\n  \"password\": \"password123\",\n  \"name\": \"John Doe\",\n  \"email\": \"johndoe@email.com\",\n  \"phoneNumber\": \"+11234567890\",\n  \"pictureUrl\": \"https://example.com/images/johndoe.jpg\",\n  \"aboutMe\": \"I'm a passionate traveler who loves to share my home with fellow explorers. Welcome!\"\n}",
+              "raw": "{\n  \"username\": \"newhosty \",\n  \"password\": \"password123\",\n  \"name\": \"John Doe\",\n  \"email\": \"johndoe2@email.com\",\n  \"phoneNumber\": \"+11234567890\",\n  \"pictureUrl\": \"https://example.com/images/johndoe.jpg\",\n  \"aboutMe\": \"I'm a passionate traveler who loves to share my home with fellow explorers. Welcome!\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3304,7 +3304,7 @@
           "    }",
           "    ",
           "    var responseBody = JSON.parse(response.text());",
-          "    pm.environment.set('bearerToken',responseBody.token); // Assuming the token is in a 'token' property",
+          "    pm.environment.set('bearerToken', responseBody.token); // Assuming the token is in a 'token' property",
           "});",
           ""
         ]
