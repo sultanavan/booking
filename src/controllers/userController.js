@@ -1,76 +1,74 @@
-import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcryptjs";
+import * as userService from "../services/userService.js";
+import { Prisma } from "@prisma/client";
+import logger from "../utils/logger.js";
 
-const prisma = new PrismaClient();
-
-// GET all users or filter by username/email
 export const getUsers = async (req, res, next) => {
   try {
-    const { username, email } = req.query;
-    const filters = {};
-    if (username) filters.username = username;
-    if (email) filters.email = email;
-
-    const users = await prisma.user.findMany({
-      where: filters,
-      include: { bookings: true, reviews: true },
-    });
-
-    res.status(200).json(users);
+    const users = await userService.findAllUsers();
+    res.json(users);
   } catch (err) {
+    logger.error(`Failed to fetch users: ${err.message}`);
     next(err);
   }
 };
 
-// GET one user by id
 export const getUser = async (req, res, next) => {
   try {
-    const user = await prisma.user.findUnique({
-      where: { id: req.params.id },
-      include: { bookings: true, reviews: true },
-    });
-    if (!user) return res.status(404).json({ message: "User not found" });
-    res.status(200).json(user);
+    const user = await userService.findUserById(req.params.id);
+    if (!user) {
+      logger.warn(`User not found: ${req.params.id}`);
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json(user);
   } catch (err) {
+    logger.error(`Failed to fetch user ${req.params.id}: ${err.message}`);
     next(err);
   }
 };
 
-// POST create user
 export const createUser = async (req, res, next) => {
   try {
-    const hashedPassword = await bcrypt.hash(req.body.password, 10);
-    const user = await prisma.user.create({
-      data: { ...req.body, password: hashedPassword },
-    });
+    const user = await userService.createUser(req.body);
+    logger.info(`User created: ${user.id}`);
     res.status(201).json(user);
   } catch (err) {
+    logger.error(`Failed to create user: ${err.message}`);
     next(err);
   }
 };
 
-// PUT update user
 export const updateUser = async (req, res, next) => {
   try {
-    if (req.body.password) {
-      req.body.password = await bcrypt.hash(req.body.password, 10);
-    }
-    const user = await prisma.user.update({
-      where: { id: req.params.id },
-      data: req.body,
-    });
-    res.status(200).json(user);
+    const user = await userService.updateUser(req.params.id, req.body);
+    logger.info(`User updated: ${req.params.id}`);
+    res.json(user);
   } catch (err) {
+    if (
+      err instanceof Prisma.PrismaClientKnownRequestError &&
+      err.code === "P2025"
+    ) {
+      logger.warn(`Update failed, user not found: ${req.params.id}`);
+      return res.status(404).json({ message: "User not found" });
+    }
+    logger.error(`Failed to update user ${req.params.id}: ${err.message}`);
     next(err);
   }
 };
 
-// DELETE user
 export const deleteUser = async (req, res, next) => {
   try {
-    await prisma.user.delete({ where: { id: req.params.id } });
-    res.status(200).json({ message: "User deleted successfully" });
+    await userService.deleteUser(req.params.id);
+    logger.info(`User deleted: ${req.params.id}`);
+    res.json({ message: "User deleted successfully" });
   } catch (err) {
+    if (
+      err instanceof Prisma.PrismaClientKnownRequestError &&
+      err.code === "P2025"
+    ) {
+      logger.warn(`Delete failed, user not found: ${req.params.id}`);
+      return res.status(404).json({ message: "User not found" });
+    }
+    logger.error(`Failed to delete user ${req.params.id}: ${err.message}`);
     next(err);
   }
 };

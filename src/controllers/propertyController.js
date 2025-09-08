@@ -1,5 +1,6 @@
-import { PrismaClient } from "@prisma/client";
-const prisma = new PrismaClient();
+import * as propertyService from "../services/propertyService.js";
+import { Prisma } from "@prisma/client";
+import logger from "../utils/logger.js";
 
 export const getProperties = async (req, res, next) => {
   try {
@@ -8,56 +9,77 @@ export const getProperties = async (req, res, next) => {
     if (location) filters.location = location;
     if (pricePerNight) filters.pricePerNight = parseFloat(pricePerNight);
 
-    const properties = await prisma.property.findMany({
-      where: filters,
-      include: { host: true, bookings: true, reviews: true },
-    });
-    res.status(200).json(properties);
+    const properties = await propertyService.findAllProperties(filters);
+    res.json(properties);
   } catch (err) {
+    logger.error(`Failed to fetch properties: ${err.message}`);
     next(err);
   }
 };
 
 export const getProperty = async (req, res, next) => {
   try {
-    const property = await prisma.property.findUnique({
-      where: { id: req.params.id },
-      include: { host: true, bookings: true, reviews: true },
-    });
-    if (!property)
+    const property = await propertyService.findPropertyById(req.params.id);
+    if (!property) {
+      logger.warn(`Property not found: ${req.params.id}`);
       return res.status(404).json({ message: "Property not found" });
-    res.status(200).json(property);
+    }
+    res.json(property);
   } catch (err) {
+    logger.error(`Failed to fetch property ${req.params.id}: ${err.message}`);
     next(err);
   }
 };
 
 export const createProperty = async (req, res, next) => {
   try {
-    const property = await prisma.property.create({ data: req.body });
+    const { amenityIds, ...data } = req.body;
+    const property = await propertyService.createProperty(data, amenityIds);
+    logger.info(`Property created: ${property.id}`);
     res.status(201).json(property);
   } catch (err) {
+    logger.error(`Failed to create property: ${err.message}`);
     next(err);
   }
 };
 
 export const updateProperty = async (req, res, next) => {
   try {
-    const property = await prisma.property.update({
-      where: { id: req.params.id },
-      data: req.body,
-    });
-    res.status(200).json(property);
+    const { amenityIds, ...data } = req.body;
+    const property = await propertyService.updateProperty(
+      req.params.id,
+      data,
+      amenityIds
+    );
+    logger.info(`Property updated: ${req.params.id}`);
+    res.json(property);
   } catch (err) {
+    if (
+      err instanceof Prisma.PrismaClientKnownRequestError &&
+      err.code === "P2025"
+    ) {
+      logger.warn(`Update failed, property not found: ${req.params.id}`);
+      return res.status(404).json({ message: "Property not found" });
+    }
+    logger.error(`Failed to update property ${req.params.id}: ${err.message}`);
     next(err);
   }
 };
 
 export const deleteProperty = async (req, res, next) => {
   try {
-    await prisma.property.delete({ where: { id: req.params.id } });
-    res.status(200).json({ message: "Property deleted successfully" });
+    await propertyService.deleteProperty(req.params.id);
+    logger.info(`Property deleted: ${req.params.id}`);
+    res.json({ message: "Property deleted successfully" });
   } catch (err) {
+    if (
+      err instanceof Prisma.PrismaClientKnownRequestError &&
+      err.code === "P2025"
+    ) {
+      logger.warn(`Delete failed, property not found: ${req.params.id}`);
+      return res.status(404).json({ message: "Property not found" });
+    }
+    logger.error(`Failed to delete property ${req.params.id}: ${err.message}`);
     next(err);
   }
 };

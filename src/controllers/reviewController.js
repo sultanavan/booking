@@ -1,56 +1,74 @@
-import { PrismaClient } from "@prisma/client";
-const prisma = new PrismaClient();
+import * as reviewService from "../services/reviewService.js";
+import { Prisma } from "@prisma/client";
+import logger from "../utils/logger.js";
 
 export const getReviews = async (req, res, next) => {
   try {
-    const reviews = await prisma.review.findMany({
-      include: { user: true, property: true },
-    });
-    res.status(200).json(reviews);
+    const reviews = await reviewService.findAllReviews();
+    res.json(reviews);
   } catch (err) {
+    logger.error(`Failed to fetch reviews: ${err.message}`);
     next(err);
   }
 };
 
 export const getReview = async (req, res, next) => {
   try {
-    const review = await prisma.review.findUnique({
-      where: { id: req.params.id },
-      include: { user: true, property: true },
-    });
-    if (!review) return res.status(404).json({ message: "Review not found" });
-    res.status(200).json(review);
+    const review = await reviewService.findReviewById(req.params.id);
+    if (!review) {
+      logger.warn(`Review not found: ${req.params.id}`);
+      return res.status(404).json({ message: "Review not found" });
+    }
+    res.json(review);
   } catch (err) {
+    logger.error(`Failed to fetch review ${req.params.id}: ${err.message}`);
     next(err);
   }
 };
 
 export const createReview = async (req, res, next) => {
   try {
-    const review = await prisma.review.create({ data: req.body });
+    const review = await reviewService.createReview(req.body);
+    logger.info(`Review created: ${review.id}`);
     res.status(201).json(review);
   } catch (err) {
+    logger.error(`Failed to create review: ${err.message}`);
     next(err);
   }
 };
 
 export const updateReview = async (req, res, next) => {
   try {
-    const review = await prisma.review.update({
-      where: { id: req.params.id },
-      data: req.body,
-    });
-    res.status(200).json(review);
+    const review = await reviewService.updateReview(req.params.id, req.body);
+    logger.info(`Review updated: ${req.params.id}`);
+    res.json(review);
   } catch (err) {
+    if (
+      err instanceof Prisma.PrismaClientKnownRequestError &&
+      err.code === "P2025"
+    ) {
+      logger.warn(`Update failed, review not found: ${req.params.id}`);
+      return res.status(404).json({ message: "Review not found" });
+    }
+    logger.error(`Failed to update review ${req.params.id}: ${err.message}`);
     next(err);
   }
 };
 
 export const deleteReview = async (req, res, next) => {
   try {
-    await prisma.review.delete({ where: { id: req.params.id } });
-    res.status(200).json({ message: "Review deleted successfully" });
+    await reviewService.deleteReview(req.params.id);
+    logger.info(`Review deleted: ${req.params.id}`);
+    res.json({ message: "Review deleted successfully" });
   } catch (err) {
+    if (
+      err instanceof Prisma.PrismaClientKnownRequestError &&
+      err.code === "P2025"
+    ) {
+      logger.warn(`Delete failed, review not found: ${req.params.id}`);
+      return res.status(404).json({ message: "Review not found" });
+    }
+    logger.error(`Failed to delete review ${req.params.id}: ${err.message}`);
     next(err);
   }
 };
