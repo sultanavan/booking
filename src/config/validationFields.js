@@ -1,0 +1,71 @@
+export const validationFields = {
+  userCreate: [
+    "username",
+    "email",
+    "password",
+    "name",
+    "phoneNumber",
+    "pictureUrl",
+  ],
+  userUpdate: ["username", "email", "name", "phoneNumber", "pictureUrl"],
+
+  hostCreate: [
+    "username",
+    "password",
+    "name",
+    "email",
+    "phoneNumber",
+    "pictureUrl",
+    "aboutMe",
+  ],
+  hostUpdate: [
+    "username",
+    "name",
+    "email",
+    "phoneNumber",
+    "pictureUrl",
+    "aboutMe",
+  ],
+
+  propertyCreate: [
+    "hostId",
+    "title",
+    "description",
+    "location",
+    "pricePerNight",
+    "bedroomCount",
+    "bathRoomCount",
+    "maxGuestCount",
+    "rating",
+  ],
+  propertyUpdate: [
+    "title",
+    "description",
+    "location",
+    "pricePerNight",
+    "bedroomCount",
+    "bathRoomCount",
+    "maxGuestCount",
+    "rating",
+  ],
+
+  bookingCreate: [
+    "userId",
+    "propertyId",
+    "checkinDate",
+    "checkoutDate",
+    "numberOfGuests",
+    "totalPrice",
+    "bookingStatus",
+  ],
+  bookingUpdate: [
+    "checkinDate",
+    "checkoutDate",
+    "numberOfGuests",
+    "totalPrice",
+    "bookingStatus",
+  ],
+
+  reviewCreate: ["userId", "propertyId", "rating", "comment"],
+  reviewUpdate: ["rating", "comment"],
+};
