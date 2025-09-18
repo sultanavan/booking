@@ -4,6 +4,14 @@ import logger from "../utils/logger.js";
 
 export const getHosts = async (req, res, next) => {
   try {
+    const { name } = req.query;
+
+    if (name) {
+      const host = await hostService.findHostByName(name);
+      if (!host) return res.status(404).json({ message: "Host not found" });
+      return res.json(host);
+    }
+
     const hosts = await hostService.findAllHosts();
     res.json(hosts);
   } catch (err) {

@@ -4,6 +4,20 @@ import logger from "../utils/logger.js";
 
 export const getUsers = async (req, res, next) => {
   try {
+    const { username, email } = req.query;
+
+    if (username) {
+      const user = await userService.findUserByUsername(username);
+      if (!user) return res.status(404).json({ message: "User not found" });
+      return res.json(user);
+    }
+
+    if (email) {
+      const user = await userService.findUserByEmail(email);
+      if (!user) return res.status(404).json({ message: "User not found" });
+      return res.json(user);
+    }
+
     const users = await userService.findAllUsers();
     res.json(users);
   } catch (err) {

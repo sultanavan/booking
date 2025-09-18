@@ -4,6 +4,17 @@ import logger from "../utils/logger.js";
 
 export const getBookings = async (req, res, next) => {
   try {
+    const { userId } = req.query;
+
+    if (userId) {
+      const bookings = await bookingService.findBookingsByUserId(userId);
+      if (!bookings.length)
+        return res
+          .status(404)
+          .json({ message: "No bookings found for this user" });
+      return res.json(bookings);
+    }
+
     const bookings = await bookingService.findAllBookings();
     res.json(bookings);
   } catch (err) {

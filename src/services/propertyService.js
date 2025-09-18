@@ -26,6 +26,16 @@ export async function findPropertyById(id) {
   });
 }
 
+export const findPropertiesByFilters = async (filters) => {
+  return prisma.property.findMany({
+    where: {
+      ...(filters.location && { location: filters.location }),
+      ...(filters.pricePerNight && { pricePerNight: filters.pricePerNight }),
+    },
+    include: { host: true },
+  });
+};
+
 export async function createProperty(data, amenityIds) {
   return prisma.property.create({
     data: {

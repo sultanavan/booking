@@ -11,6 +11,12 @@ export async function findHostById(id) {
   return prisma.host.findUnique({ where: { id }, include: { listings: true } });
 }
 
+export const findHostByName = async (name) => {
+  return prisma.host.findFirst({
+    where: { name },
+  });
+};
+
 export async function createHost(data) {
   const hashedPassword = await bcrypt.hash(data.password, 10);
   return prisma.host.create({ data: { ...data, password: hashedPassword } });

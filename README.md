@@ -60,3 +60,29 @@ npm test
 After this, you will see the test results prompted to the terminal. If you have a look at the `package.json` file, you will see that it executes the collection stored in the `postman` folder of the repo root.
 
 Important: When dealing with JSON data, please, make sure that you restart the server with `npm run dev` every time you execute tests! This is important because some tests will remove data via DELETE endpoints and that operation cannot be repeated with the same ID again and again.
+
+## extra tests
+
+```
+# Users by Username
+curl -X GET "http://localhost:3000/users?username=jdoe" -H "Content-Type: application/json"
+
+# Users by Email
+curl -X GET "http://localhost:3000/users?email=johndoe@example.com" -H "Content-Type: application/json"
+
+# Bookings by UserId
+curl -X GET "http://localhost:3000/bookings?userId=a1234567-89ab-cdef-0123-456789abcdef" -H "Content-Type: application/json"
+
+# Properties by Location
+curl -X GET "http://localhost:3000/properties?location=Malibu,%20California" -H "Content-Type: application/json"
+
+# Properties by Price
+curl -X GET "http://localhost:3000/properties?pricePerNight=310.25" -H "Content-Type: application/json"
+
+# Properties by Location + Price
+curl -X GET "http://localhost:3000/properties?location=Malibu,%20California&pricePerNight=310.25" -H "Content-Type: application/json"
+
+# Hosts by Name
+curl -X GET "http://localhost:3000/hosts?name=John%20Doe" -H "Content-Type: application/json"
+
+```

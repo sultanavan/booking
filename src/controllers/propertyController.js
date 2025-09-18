@@ -5,11 +5,19 @@ import logger from "../utils/logger.js";
 export const getProperties = async (req, res, next) => {
   try {
     const { location, pricePerNight } = req.query;
-    const filters = {};
-    if (location) filters.location = location;
-    if (pricePerNight) filters.pricePerNight = parseFloat(pricePerNight);
 
-    const properties = await propertyService.findAllProperties(filters);
+    if (location || pricePerNight) {
+      const filters = {};
+      if (location) filters.location = location;
+      if (pricePerNight) filters.pricePerNight = parseFloat(pricePerNight);
+
+      const properties = await propertyService.findPropertiesByFilters(filters);
+      if (!properties.length)
+        return res.status(404).json({ message: "No properties found" });
+      return res.json(properties);
+    }
+
+    const properties = await propertyService.findAllProperties();
     res.json(properties);
   } catch (err) {
     logger.error(`Failed to fetch properties: ${err.message}`);

@@ -12,6 +12,13 @@ export async function findBookingById(id) {
   });
 }
 
+export const findBookingsByUserId = async (userId) => {
+  return prisma.booking.findMany({
+    where: { userId },
+    include: { property: true }, // include property info if useful
+  });
+};
+
 export async function createBooking(data) {
   return prisma.booking.create({
     data,
